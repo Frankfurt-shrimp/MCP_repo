@@ -203,9 +203,8 @@ Taipei 天氣
 
 ### MCP 跟上週的 Tool Calling 有什麼不同？
 
-> 林永富：做完這次實作後，我深刻體會到 MCP (Model Context Protocol) 帶來的高度解耦與擴展性。
-> 上週的 Tool Calling，我們必須把 API 取得邏輯與呼叫大模型的程式碼「綁定」在同一個專案或腳本中。我們需要自己維護所有的函式定義，如果 Tool 增加，大模型的 prompt 或 function list 就要手動寫死。
-> 然而，引入 MCP Server 後，**Tool 完全獨立於 Agent 之外**。Agent 就像客戶端，它只要連上 SSE (或 STDIO)，詢問「你有什麼能力？」，MCP Server 就會自動發出標準化的 JSON 宣告。這意味著，未來如果我想用別的模型（如 Claude 或其他大模型），我不需要重寫任何與天氣、查詢等有關的程式碼，只要換一個有配合 MCP 標準的 AI Client 即可。
-> 簡單來說：**上週是「把工具塞給 AI」，這週 MCP 是「把工具做成伺服器，讓 AI 自己來要」**。這種標準化的架構讓開發與維護變得非常乾淨俐落！
+> 林永富：做完這次實作後，我深刻體會到 MCP (Model Context Protocol) 帶來的高度解耦與擴展性。上週的 Tool Calling，我們必須把 API 取得邏輯與呼叫大模型的程式碼「綁定」在同一個專案或腳本中。我們需要自己維護所有的函式定義，如果 Tool 增加，大模型的 prompt 或 function list 就要手動寫死。然而，引入 MCP Server 後，**Tool 完全獨立於 Agent 之外**。Agent 就像客戶端，它只要連上 SSE (或 STDIO)，詢問「你有什麼能力？」，MCP Server 就會自動發出標準化的 JSON 宣告。這意味著，未來如果我想用別的模型（如 Claude 或其他大模型），我不需要重寫任何與天氣、查詢等有關的程式碼，只要換一個有配合 MCP 標準的 AI Client 即可。簡單來說：**上週是「把工具塞給 AI」，這週 MCP 是「把工具做成伺服器，讓 AI 自己來要」**。這種標準化的架構讓開發與維護變得非常乾淨俐落！
+---
 > 洪紹禎：從 Agent 開發者的角度來看，最大的突破在於「動態探索」與「職責分離」。以前實作 Tool Calling 時，必須在 Agent 程式碼中寫死所有的 function definitions，一旦工具增減變動，甚至只改個參數，Agent 這邊也必須同步修改。而有了 MCP 標準後，Agent 變成一個純粹的「大腦與中控台」，它可以自動去 Server 請求現有工具的目錄；無論 Server 掛載了什麼新工具，Agent 都能無縫接軌並提供給模型使用。這讓整體的系統擴充變得毫無負擔，是走向通用型 AI 助理的重要一步。
+---
 > 陳婉榕：上週我們做傳統的 Tool Calling 時，除了把工具的邏輯寫出來，還必須自己手動把 Python function 轉換成符合大語言模型規定的 JSON Schema 格式，Agent 才能看得懂，這讓寫功能和串接模型綁得死死的。但在引入 MCP 之後，我發現我根本不需要去管 Gemini 的 API 長怎樣、或是需要什麼特殊的資料結構。我只要專心把 activity 跟 advice 的 Python 邏輯寫好，最後加上一行 @mcp.tool() 裝飾器，工作就結束了！MCP Server 就像一個自動翻譯機，幫我把寫好的工具轉換成標準規格，讓前台的 Agent 自己來取用。寫工具的人不用懂 AI 底層，做 Agent 的人不用管工具怎麼寫，開發效率變得比較高。
