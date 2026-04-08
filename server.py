@@ -1,3 +1,13 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "mcp[cli]>=1.0.0",
+#     "requests>=2.28.0",
+#     "duckduckgo-search>=7.0.0",
+#     "typer>=0.16.0"
+# ]
+# ///
+
 """
 W8 分組實作：MCP Server
 主題：旅遊顧問 MCP Server
@@ -10,15 +20,36 @@ W8 分組實作：MCP Server
 - 洪紹禎：Resource + Prompt + Agent
 """
 
-from mcp.server.fastmcp import FastMCP
-from tools.weather_tool import get_weather
-from tools.search_tool import web_search
-from tools.advice_tool import get_random_advice
-from tools.bored_tool import get_random_activity
-from tools.trivia_tool import get_random_trivia
-from tools.country_info_tool import get_country_info_data
+import argparse
+import os
+import sys
 
-mcp = FastMCP("旅遊顧問-server")
+from mcp.server.fastmcp import FastMCP
+
+try:
+    from .tools.weather_tool import get_weather
+    from .tools.search_tool import web_search
+    from .tools.advice_tool import get_random_advice
+    from .tools.bored_tool import get_random_activity
+    from .tools.trivia_tool import get_random_trivia
+    from .tools.country_info_tool import get_country_info_data
+except ImportError:
+    from tools.weather_tool import get_weather
+    from tools.search_tool import web_search
+    from tools.advice_tool import get_random_advice
+    from tools.bored_tool import get_random_activity
+    from tools.trivia_tool import get_random_trivia
+    from tools.country_info_tool import get_country_info_data
+
+DEFAULT_HOST = os.environ.get("MCP_HOST", "localhost")
+DEFAULT_PORT = int(os.environ.get("MCP_PORT", "8000"))
+
+mcp = FastMCP(
+    "旅遊顧問-server",
+    host=DEFAULT_HOST,
+    port=DEFAULT_PORT,
+    dependencies=["requests", "duckduckgo-search", "typer"],
+)
 
 
 # ════════════════════════════════
@@ -114,6 +145,48 @@ def plan_trip(city: str) -> str:
     )
 
 
+def parse_args() -> argparse.Namespace:
+    """讓同一份 server 同時支援 Inspector(stdio) 與獨立 SSE 啟動。"""
+    parser = argparse.ArgumentParser(description="Travel Advisor MCP Server")
+    parser.add_argument(
+        "--host",
+        default=DEFAULT_HOST,
+        help="HTTP bind host used for SSE/streamable-http transports.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=DEFAULT_PORT,
+        help="HTTP bind port used for SSE/streamable-http transports.",
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "sse", "streamable-http"],
+        default=os.environ.get("MCP_TRANSPORT", "stdio"),
+        help="MCP transport mode. Default is stdio for Inspector compatibility.",
+    )
+    parser.add_argument(
+        "--mount-path",
+        default=os.environ.get("MCP_MOUNT_PATH"),
+        help="Optional mount path for HTTP transports.",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    print("MCP Server 啟動中... http://localhost:8000")
-    mcp.run(transport="sse")
+    args = parse_args()
+    mcp.settings.host = args.host
+    mcp.settings.port = args.port
+
+    # stdio 模式不能往 stdout 印任何文字，否則會破壞 MCP JSON-RPC。
+    if args.transport != "stdio":
+        print(
+            f"MCP Server 啟動中... transport={args.transport} http://{args.host}:{args.port}",
+            file=sys.stderr,
+        )
+
+    run_kwargs = {"transport": args.transport}
+    if args.mount_path:
+        run_kwargs["mount_path"] = args.mount_path
+
+    mcp.run(**run_kwargs)

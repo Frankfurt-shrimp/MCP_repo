@@ -69,15 +69,27 @@ pip install -r requirements.txt
 cp .env.example .env
 # 編輯 .env，填入你的 GEMINI_API_KEY
 
-# 4. 用 MCP Inspector 測試 Server
+# 4. 用 MCP Inspector 測試 Server（推薦：repo 內建的一鍵啟動）
+./open_inspector.command
+
+# 或者不用腳本，直接使用 repo 內的 Inspector config：
+npx @modelcontextprotocol/inspector --config inspector.json
+
+# 如果你偏好 mcp CLI：
 mcp dev server.py
 
-# 5. 用 Agent 對話（需開兩個終端機）
-# 終端機 1：
-python server.py
-# 終端機 2：
+# 5. 用 Agent 對話（推薦：stdio 模式，一個終端機即可）
 python agent.py
+
+# 6. 如果你想保留原本「分開啟動 Server + Agent」的方式，改用 SSE：
+# 終端機 1：
+python server.py --transport sse --host localhost --port 8000
+# 終端機 2：
+python agent.py --transport sse
 ```
+
+> 注意：MCP Inspector v0.21.1 的 UI 本身不會自動按下 Connect。
+> `open_inspector.command` 會幫你把 server 設定好，打開後直接按 Connect 就能成功，不需要再手填 SSE URL。
 
 ---
 
@@ -85,7 +97,7 @@ python agent.py
 
 ### MCP Inspector 截圖
 
-> 貼上 Inspector 的截圖（Tools / Resources / Prompts 三個分頁都要有）
+![alt text](image-1.png)
 
 ### Agent 對話截圖
 
