@@ -195,6 +195,7 @@ Taipei 天氣
 ### 遇到最難的問題
 
 > 林永富：這次實作遇到最困難的部分是如何把從上週獨立開發的 Tool，全部整合進 FastMCP 的註冊系統裡。因為原本的架構大家是寫死在主程式，現在要透過 `@mcp.tool()` 來統一介面讓 Agent 辨識。我們解決的方式是，先規劃好每個 Tool 必須要有獨立的 return string，不處理任何互動邏輯，只要維持單純的 input/output。此外，`agent.py` 如何把伺服器的 MCP Tool schema 解析成 Gemini function declaration 也是一大挑戰，後來參考了老師的指引與使用迴圈一一對應 type 才成功。
+
 > 洪紹禎：這次實作中，最具挑戰性的部分在於如何讓 Gemini Agent 正確與 MCP Server 進行對話。處理連接設定，尤其是理解 SSE 或 stdio 的底層傳輸模式，以及將 MCP 提供的 Tool Schema 轉換為 Gemini API 可以接受的格式，需要十分細心。此外，要設計良好的 System Prompt 確保大語言模型能根據用戶需求精準挑選工具、並妥善把各個工具的回傳結果統合成自然的最終回答，也經過了多次的反覆測試。
 
 ### MCP 跟上週的 Tool Calling 有什麼不同？
