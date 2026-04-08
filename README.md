@@ -89,7 +89,7 @@ python agent.py
 
 ### Agent 對話截圖
 
-> 貼上 Agent 對話的截圖（顯示 Gemini 呼叫 Tool 的過程，以及使用 /use 呼叫 Prompt 的結果）
+![alt text](image.png)
 
 ---
 
